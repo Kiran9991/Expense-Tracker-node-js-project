@@ -22,6 +22,7 @@ async function storeData (e) {
     } else {
         throw new Error('Failed to login');
     }
+    alert(message);
     }catch(err) {
         document.body.innerHTML += `<div style = "color:red;">${err} </div>`
     }

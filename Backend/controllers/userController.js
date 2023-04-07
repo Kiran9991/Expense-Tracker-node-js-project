@@ -10,9 +10,6 @@ function isStringInvalid(string) {
 
 const signUp = async(req,res) => {
     try {
-    // const username = req.body.name;
-    // const email = req.body.email;
-    // const password = req.body.password;
 
     const {name, email, password} = req.body;
 
@@ -27,6 +24,17 @@ const signUp = async(req,res) => {
     }
 }
 
+const signupDetails = async(req, res) => {
+    try {
+        const data = await User.findAll();
+        res.status(201).json({userDetail: data})
+    } catch(error) {
+        console.log('Get users is failing', JSON.stringify(error))
+        res.status(500).json({error: error})
+    }
+}
+
 module.exports = {
-    signUp
+    signUp,
+    signupDetails
 }
