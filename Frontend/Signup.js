@@ -10,20 +10,19 @@ async function storeData (e) {
     let email = document.getElementById('email').value;
     let password = document.getElementById('password').value;
 
-    let loginDetails = {
+    let signupDetails = {
         name,
         email,
         password
     }
 
-    const response = await axios.post('http://localhost:3000/user/signup-user', loginDetails)
+    const response = await axios.post('http://localhost:3000/user/signup-user', signupDetails)
     if(response.status === 201) {
         window.location.href = "login.html";
-        console.log(response.data.newUserDetail);
     } else {
         throw new Error('Failed to login');
     }
     }catch(err) {
-        document.body.innerHTML += `<div style = "color:green;">${err} </div>`
+        document.body.innerHTML += `<div style = "color:red;">${err} </div>`
     }
 }
