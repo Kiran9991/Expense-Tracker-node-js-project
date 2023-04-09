@@ -1,3 +1,4 @@
+
 let submitbtn = document.getElementById('submit');
 
 submitbtn.addEventListener('click', loginUser);
@@ -14,15 +15,15 @@ async function loginUser(e) {
         password
     }
 
-    await axios.get(`http://localhost:3000/user/get-users`)
-    .then(response => {
-        if(loginDetails.email === response.userDetail.email) {
-            alert('Successfully login');
-        }else {
-            throw new Error('Failed to login');
-        }
-    })
+    const response = await axios.post(`http://localhost:3000/user/login-user`,loginDetails)
+    // .then(response => {
+        alert(response.data.message)
+    // }).catch(err => {
+        // console.log(JSON.stringify(err));
+        // document.body.innerHTML += `<div style = "color:red;">${err.message} </div>`
+    // })
+        
     }catch(err) {
-        document.body.innerHTML += `<div style = "color:red;">${err} </div>`
+        document.body.innerHTML += `<div style = "color:red;">${err.message} </div>`
     }
 }

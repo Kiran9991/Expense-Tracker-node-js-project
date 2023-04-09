@@ -34,7 +34,31 @@ const signupDetails = async(req, res) => {
     }
 }
 
+const login = async (req, res) => {
+    try {
+        const {email, password} = req.body;
+
+        const user = await User.findAll({ where: { email }})
+        // .then(user => {
+            if(user.length > 0) {
+                if(user[0].password === password) {
+                    res.status(200).json({success: true, message: 'User logged in successfully'})
+                } else {
+                    return res.status(400).json({success: false, message: 'Password is incorrect'})
+                }
+            } else {
+                return res.status(400).json({success: false, message: 'User Does not exist'})
+            }
+        // }).catch(err => {
+        //     res.status(500).json({message: err, success: false})
+        // });
+    } catch (err) {
+        res.status(500).json({message: 'error in login'});
+    }
+}
+
 module.exports = {
     signUp,
-    signupDetails
+    signupDetails,
+    login
 }
