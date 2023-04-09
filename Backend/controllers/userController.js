@@ -39,21 +39,17 @@ const login = async (req, res) => {
         const {email, password} = req.body;
 
         const user = await User.findAll({ where: { email }})
-        // .then(user => {
             if(user.length > 0) {
                 if(user[0].password === password) {
-                    res.status(200).json({success: true, message: 'User logged in successfully'})
+                    res.status(200).json({success: true, message: 'User login sucessful'})
                 } else {
-                    return res.status(400).json({success: false, message: 'Password is incorrect'})
+                    return res.status(401).json({success: false, message: 'User not authorized'})
                 }
             } else {
-                return res.status(400).json({success: false, message: 'User Does not exist'})
+                return res.status(404).json({success: false, message: 'User not found'})
             }
-        // }).catch(err => {
-        //     res.status(500).json({message: err, success: false})
-        // });
     } catch (err) {
-        res.status(500).json({message: 'error in login'});
+        res.status(500).json({message: err, success: false});
     }
 }
 

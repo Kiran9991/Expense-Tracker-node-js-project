@@ -16,13 +16,7 @@ async function loginUser(e) {
     }
 
     const response = await axios.post(`http://localhost:3000/user/login-user`,loginDetails)
-    // .then(response => {
         alert(response.data.message)
-    // }).catch(err => {
-        // console.log(JSON.stringify(err));
-        // document.body.innerHTML += `<div style = "color:red;">${err.message} </div>`
-    // })
-        
     }catch(err) {
         document.body.innerHTML += `<div style = "color:red;">${err.message} </div>`
     }
