@@ -17,9 +17,9 @@ async function loginUser(e) {
 
     const response = await axios.post(`http://localhost:3000/user/login-user`,loginDetails)
         alert(response.data.message)
-        if(response.status === 200) {
-            window.location.href = `../Expense Table/ExpenseTracker.html`;
-        }
+        console.log(response.data);
+        localStorage.setItem('token', response.data.token)
+        window.location.href = `../Expense Table/ExpenseTracker.html`;
     }catch(err) {
         document.body.innerHTML += `<div style = "color:red;">${err.message} </div>`
     }
