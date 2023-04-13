@@ -24,29 +24,22 @@ const signUp = async(req,res) => {
     }
 }
 
-const signupDetails = async(req, res) => {
-    try {
-        const data = await User.findAll();
-        res.status(201).json({userDetail: data})
-    } catch(error) {
-        console.log('Get users is failing', JSON.stringify(error))
-        res.status(500).json({error: error})
-    }
-}
-
 const login = async (req, res) => {
     try {
         const {email, password} = req.body;
+        if(isStringInvalid(email) || isStringInvalid(password)) {
+            return res.status(400).json({message: "EmailId and password is missing"})
+        }
 
         const user = await User.findAll({ where: { email }})
             if(user.length > 0) {
                 if(user[0].password === password) {
-                    res.status(200).json({success: true, message: 'User login sucessful'})
+                    res.status(200).json({success: true, message: 'User logged in sucessful'})
                 } else {
-                    return res.status(401).json({success: false, message: 'User not authorized'})
+                    return res.status(400).json({success: false, message: 'Password is incorrect'})
                 }
             } else {
-                return res.status(404).json({success: false, message: 'User not found'})
+                return res.status(404).json({success: false, message: `User Doesn't exist`})
             }
     } catch (err) {
         res.status(500).json({message: err, success: false});
@@ -55,6 +48,5 @@ const login = async (req, res) => {
 
 module.exports = {
     signUp,
-    signupDetails,
     login
 }
