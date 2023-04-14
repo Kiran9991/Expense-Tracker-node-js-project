@@ -5,7 +5,7 @@ const addExpense = async(req, res) => {
     try {
         const{amount, description, category} = req.body;
 
-        const data = await Expense.create({amount, description, category, userId: req.user.id});
+        const data = await req.user.createExpense({amount, description, category});
         res.status(201).json({newExpenseDetail: data});
     } catch(err) {
         console.log(`posting data is not`);
@@ -15,7 +15,7 @@ const addExpense = async(req, res) => {
 
 const getExpenses = async(req, res) => {
     try {
-        const expenses = await Expense.findAll({ where : { userId: req.user.id}});
+        const expenses = await req.user.getExpenses();
         res.status(200).json({allExpensesDetails: expenses})
     } catch(error) {
         console.log('Get expenses is failing', JSON.stringify(error))
