@@ -43,6 +43,8 @@ window.addEventListener('DOMContentLoaded', () => {
 
 function showExpenseOnScreen(expenseDetails) {
 
+    const token = localStorage.getItem('token');
+
     var tbody = document.createElement('tbody');
     var tr = document.createElement('tr');
     var th = document.createElement('td')
@@ -62,7 +64,7 @@ function showExpenseOnScreen(expenseDetails) {
     th4.innerHTML = ' '
 
     function deleteId(itemId) {
-        axios.delete('http://localhost:3000/expense/delete-expense/'+itemId)
+        axios.delete('http://localhost:3000/expense/delete-expense/'+itemId, { headers: {"Authorization": token} })
         .then((res) => console.log(res))
         .catch(err => console.log(err))
     }
@@ -76,7 +78,7 @@ function showExpenseOnScreen(expenseDetails) {
     }
 
     function editId(itemId) {
-        axios.put('http://localhost:3000/expense/delete-expense/'+itemId)
+        axios.put('http://localhost:3000/expense/delete-expense/'+itemId, { headers: {"Authorization": token} })
         .then((res) => console.log(res))
     }
     
