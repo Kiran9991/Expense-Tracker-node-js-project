@@ -1,5 +1,5 @@
 const Expense = require('../models/expense');
-const jwt = require('jsonwebtoken');
+// const jwt = require('jsonwebtoken');
 
 const addExpense = async(req, res) => {
     try {
@@ -8,6 +8,7 @@ const addExpense = async(req, res) => {
         const data = await Expense.create({amount, description, category, userId: req.user.id});
         res.status(201).json({newExpenseDetail: data});
     } catch(err) {
+        console.log(`posting data is not`);
         res.status(500).json(err);
     }
 }

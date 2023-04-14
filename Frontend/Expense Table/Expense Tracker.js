@@ -15,13 +15,12 @@ function storeExpenses(e) {
     let expenseDetails = {
         amount,
         description,
-        category,
-        id
+        category
     }
 
     // showExpenseOnScreen(expenseDetails);
-
-    axios.post('http://localhost:3000/expense/add-expense', expenseDetails)
+    const token = localStorage.getItem('token');
+    axios.post('http://localhost:3000/expense/add-expense', expenseDetails, { headers: {"Authorization": token} })
     .then((response) => {
         showExpenseOnScreen(response.data.newExpenseDetail);
         console.log(response)
