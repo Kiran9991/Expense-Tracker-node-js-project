@@ -16,7 +16,7 @@ function storeExpenses(e) {
         amount,
         description,
         category,
-        userId: 1
+        id
     }
 
     // showExpenseOnScreen(expenseDetails);
@@ -34,10 +34,10 @@ function storeExpenses(e) {
 }
 
 window.addEventListener('DOMContentLoaded', () => {
-    const token = localStorage.getItem('token')
-    axios.get('http://localhost:3000/expense/get-expenses', { headers: {"Authorization": token} }).then((response) => {
-        for(let i=0; i<response.data.newExpenses.length; i++) {
-            showExpenseOnScreen(response.data.newExpenses[i]);
+    const token = localStorage.getItem('token');
+    axios.get('http://localhost:3000/expense/get-expenses',{ headers: {"Authorization": token} }).then((response) => {
+        for(let i=0; i<response.data.allExpensesDetails.length; i++) {
+            showExpenseOnScreen(response.data.allExpensesDetails[i]);
         }
     }).catch((error) => console.log(error));
 })

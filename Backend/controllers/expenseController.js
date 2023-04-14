@@ -1,11 +1,12 @@
 const Expense = require('../models/expense');
+const jwt = require('jsonwebtoken');
 
 const addExpense = async(req, res) => {
     try {
         const{amount, description, category} = req.body;
 
         const data = await Expense.create({amount, description, category, userId: req.user.id});
-        res.status(201).json({newExpenseDetail: data, success: true});
+        res.status(201).json({newExpenseDetail: data});
     } catch(err) {
         res.status(500).json(err);
     }
@@ -13,11 +14,11 @@ const addExpense = async(req, res) => {
 
 const getExpenses = async(req, res) => {
     try {
-        const expenses = Expense.findAll({ where : { userId: req.user.id}});
-        res.status(200).json({newExpenses: expenses, success: true})
+        const expenses = await Expense.findAll({ where : { userId: req.user.id}});
+        res.status(200).json({allExpensesDetails: expenses})
     } catch(error) {
         console.log('Get expenses is failing', JSON.stringify(error))
-        res.status(500).json({success: false, error: error})
+        res.status(500).json({error: error})
     }
 }
 
