@@ -14,7 +14,7 @@ const addExpense = async(req, res) => {
 }
 
 const getExpenses = async(req, res) => {
-    try {
+    try {                     
         const expenses = await req.user.getExpenses();
         res.status(200).json({allExpensesDetails: expenses})
     } catch(error) {
@@ -30,8 +30,11 @@ const deleteExpense = async (req, res) => {
             return res.status(400).json({err: 'ID is missing'})
         }
         const expenseId = req.params.id;
-        await Expense.destroy({where: {id: expenseId, userId: req.user.id}});
+        const noOfRows = await Expense.destroy({where: {id: expenseId, userId: req.user.id}});
         res.sendStatus(200);
+        if(noOfRows === 0) {
+            return res.status(404).json({message: `Expense doesn't belongs to user`})
+        }
     } catch(err) {
         console.log(err)
         res.status(500).json(err);

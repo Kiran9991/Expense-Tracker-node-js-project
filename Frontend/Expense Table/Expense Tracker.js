@@ -2,6 +2,8 @@
 const myform = document.getElementById('myform');
 let items = document.getElementById('items');
 
+const razorPay = document.getElementById('rzp-button');
+
 
 myform.addEventListener('submit', storeExpenses);
 
@@ -34,7 +36,7 @@ function storeExpenses(e) {
 
 window.addEventListener('DOMContentLoaded', () => {
     const token = localStorage.getItem('token');
-    axios.get('http://localhost:3000/expense/get-expenses',{ headers: {"Authorization": token} }).then((response) => {
+    axios.get('http://localhost:3000/expense/get-expenses', { headers: {"Authorization": token} }).then((response) => {
         for(let i=0; i<response.data.allExpensesDetails.length; i++) {
             showExpenseOnScreen(response.data.allExpensesDetails[i]);
         }
@@ -42,8 +44,6 @@ window.addEventListener('DOMContentLoaded', () => {
 })
 
 function showExpenseOnScreen(expenseDetails) {
-
-    const token = localStorage.getItem('token');
 
     var tbody = document.createElement('tbody');
     var tr = document.createElement('tr');
@@ -64,6 +64,7 @@ function showExpenseOnScreen(expenseDetails) {
     th4.innerHTML = ' '
 
     function deleteId(itemId) {
+        const token = localStorage.getItem('token');
         axios.delete('http://localhost:3000/expense/delete-expense/'+itemId, { headers: {"Authorization": token} })
         .then((res) => console.log(res))
         .catch(err => console.log(err))
@@ -98,4 +99,24 @@ function showExpenseOnScreen(expenseDetails) {
     th3.appendChild(deletebtn)
     
     items.appendChild(tbody)
+}
+
+razorPay.onclick = async function (e) {
+    const token = localStorage.getItem('token');
+    const response = await axios.get('http://localhost:3000/purchase/premiummembership', { headers: {"Authorization": token} })
+    console.log(response);
+    var options = 
+    {
+        "key": response.data.key_id,
+        "order_id": response.data.order.id,
+        "handler": async function (response) {
+            await axios.post('http://localhost:3000/purchase/updatetransactionstatus', {
+                order_id: options.order_id,
+                payment_id: response.razorpay_payment_id,
+            }, { headers: {"Authorization": token} })
+
+            alert(`You are a Premium User Now`)
+        },
+    }
+    const rzpl = new Razorpay(options)
 }
