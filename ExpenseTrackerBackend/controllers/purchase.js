@@ -9,7 +9,6 @@ const purchasepremium =async (req, res) => {
         var rzp = new Razorpay({
             key_id: process.env.RAZORPAY_KEY_ID,
             key_secret: process.env.RAZORPAY_KEY_SECRET,
-            // ...Order(process.env.NODE_ENV === 'development' && {test:true})
         })
         const amount = 2500;
 
@@ -26,7 +25,7 @@ const purchasepremium =async (req, res) => {
         })
     } catch(err){
         console.log(err);
-        res.status(403).json({ message: 'Sometghing went wrong', error: err})
+        res.status(403).json({ message: 'Something went wrong', error: err})
     }
 }
 
@@ -35,11 +34,11 @@ const purchasepremium =async (req, res) => {
         const userId = req.user.id;
         const { payment_id, order_id} = req.body;
         const order  = await Order.findOne({where : {orderid : order_id}}) //2
-        const promise1 =  order.update({ paymentid: payment_id, status: 'SUCCESSFUL'}) 
+        const promise1 =  order.update({ paymentid: payment_id, status: 'SUCCESSFULL'}) 
         const promise2 =  req.user.update({ ispremiumuser: true }) 
 
         Promise.all([promise1, promise2]).then(()=> {
-            return res.status(202).json({sucess: true, message: "Transaction Successful", token: userController.generateAccessToken(userId,undefined , true) });
+            return res.status(202).json({sucess: true, message: "Transaction Successful"})//,token: userController.generateAccessToken(userId,undefined , true) });
         }).catch((error ) => {
             throw new Error(error)
         })
@@ -48,7 +47,7 @@ const purchasepremium =async (req, res) => {
                 
     } catch (err) {
         console.log(err);
-        res.status(403).json({ errpr: err, message: 'Sometghing went wrong' })
+        res.status(403).json({ errpr: err, message: 'Something went wrong' })
 
     }
 }
