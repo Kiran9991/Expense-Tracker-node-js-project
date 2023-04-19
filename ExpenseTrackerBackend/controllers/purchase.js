@@ -41,14 +41,10 @@ const purchasepremium =async (req, res) => {
             return res.status(202).json({sucess: true, message: "Transaction Successful"})
         }).catch((error ) => {
             throw new Error(error)
-        })
-
-        
-                
+        })          
     } catch (err) {
         console.log(err);
         res.status(403).json({ errpr: err, message: 'Something went wrong' })
-
     }
 }
 

@@ -118,6 +118,9 @@ razorPay.onclick = async function (e) {
             }, { headers: {"Authorization": token} })
 
             alert(`You are a Premium User Now`)
+            razorPay.textContent = `You are a Premium user`
+            razorPay.className = 'btn btn-warning';
+            razorPay.disabled = true;
         },
     };
     if(response.status === 200) {
