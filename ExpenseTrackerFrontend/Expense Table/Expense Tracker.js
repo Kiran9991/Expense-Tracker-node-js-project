@@ -120,6 +120,9 @@ razorPay.onclick = async function (e) {
             alert(`You are a Premium User Now`)
         },
     };
+    if(response.status === 200) {
+        alert('Transaction successful')
+    }
     const rzpl = new Razorpay(options);
     rzpl.open();
     e.preventDefault();
