@@ -1,7 +1,6 @@
 
 const myform = document.getElementById('myform');
 let items = document.getElementById('items');
-// const Razorpay = require('razorpay');
 
 const razorPay = document.getElementById('rzp-button');
 
@@ -52,6 +51,7 @@ window.addEventListener('DOMContentLoaded', () => {
     const ispremiumuser = decodeToken.ispremiumuser
     if(ispremiumuser) {
         showPremiumText(razorPay);
+        showLeaderBoardOnScreen()
     }
     axios.get('http://localhost:3000/expense/get-expenses', { headers: {"Authorization": token} }).then((response) => {
         for(let i=0; i<response.data.allExpensesDetails.length; i++) {
@@ -125,6 +125,25 @@ function showPremiumText(rzp) {
     rzp.disabled = true;
 }
 
+function showLeaderBoardOnScreen() {
+    const leaderBoard = document.createElement('input')
+    leaderBoard.type = "button"
+    leaderBoard.value = 'Show LeaderBoard'
+    leaderBoard.className = 'btn btn-success'
+    leaderBoard.onclick = async() => {
+        const token = localStorage.getItem('token');
+        const userLeaderBoardArray = await axios.get('http://localhost:3000/premium/leaderboard',{ headers: {"Authorization": token} })
+        console.log(userLeaderBoardArray);
+        
+        var leaderBoardElem = document.getElementById('leaderboard')
+        leaderBoardElem.innerHTML += '<h3>Leader Board </h3>'
+        userLeaderBoardArray.data.forEach((userDetails) => {
+            leaderBoardElem.innerHTML += `<li>Name - ${userDetails.name} Total Expense ${userDetails.total_cost}`
+        })
+    }
+    document.getElementById('message').appendChild(leaderBoard)
+}
+
 razorPay.onclick = async function (e) {
     const token = localStorage.getItem('token');
     const response = await axios.get('http://localhost:3000/purchase/premiummembership',{ headers: {"Authorization": token} })
@@ -141,6 +160,7 @@ razorPay.onclick = async function (e) {
 
             alert(`You are a Premium User Now`)
             showPremiumText(razorPay);
+            showLeaderBoardOnScreen()
         },
     };
     if(response.status === 200) {
