@@ -9,7 +9,7 @@ const userLeaderBoard = async(req, res) => {
         expenses.forEach((expense) => {
 
             if(userAggregatedExpenses[expense.userId]) {
-                userAggregatedExpenses[expense.userId] = userAggregatedExpenses[expense.userId] + expense.amount;
+                userAggregatedExpenses[expense.userId] += expense.amount;
             }else {
                 userAggregatedExpenses[expense.userId] = expense.amount;
             }
@@ -19,6 +19,7 @@ const userLeaderBoard = async(req, res) => {
             userLeaderBoardDetails.push({ name: user.name, total_cost: userAggregatedExpenses[user.id]})
         })
         console.log(userLeaderBoardDetails);
+        userLeaderBoardDetails.sort((a,b) => b.total_cost - a.total_cost);
         res.status(200).json(userLeaderBoardDetails)
     }catch(error) {
         console.log('Get data is failing', JSON.stringify(error))
