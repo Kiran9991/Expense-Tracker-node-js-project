@@ -35,8 +35,24 @@ function storeExpenses(e) {
 
 }
 
+function parseJwt (token) {
+    var base64Url = token.split('.')[1];
+    var base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    var jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
+        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+    }).join(''));
+
+    return JSON.parse(jsonPayload);
+}
+
 window.addEventListener('DOMContentLoaded', () => {
     const token = localStorage.getItem('token');
+    const decodeToken = parseJwt(token); 
+    console.log(decodeToken);
+    const ispremiumuser = decodeToken.ispremiumuser
+    if(ispremiumuser) {
+        showPremiumText(razorPay);
+    }
     axios.get('http://localhost:3000/expense/get-expenses', { headers: {"Authorization": token} }).then((response) => {
         for(let i=0; i<response.data.allExpensesDetails.length; i++) {
             showExpenseOnScreen(response.data.allExpensesDetails[i]);
@@ -103,6 +119,12 @@ function showExpenseOnScreen(expenseDetails) {
     items.appendChild(tbody)
 }
 
+function showPremiumText(rzp) {
+    rzp.textContent = `You are a Premium user`
+    rzp.className = 'btn btn-warning';
+    rzp.disabled = true;
+}
+
 razorPay.onclick = async function (e) {
     const token = localStorage.getItem('token');
     const response = await axios.get('http://localhost:3000/purchase/premiummembership',{ headers: {"Authorization": token} })
@@ -118,9 +140,7 @@ razorPay.onclick = async function (e) {
             }, { headers: {"Authorization": token} })
 
             alert(`You are a Premium User Now`)
-            razorPay.textContent = `You are a Premium user`
-            razorPay.className = 'btn btn-warning';
-            razorPay.disabled = true;
+            showPremiumText(razorPay);
         },
     };
     if(response.status === 200) {

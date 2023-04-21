@@ -30,8 +30,8 @@ const signUp = async(req,res) => {
     }
 }
 
-function generateAccessToken(id,name) {
-    return jwt.sign({ userId: id, name: name}, 'secretKey')
+const generateAccessToken = (id,name, ispremiumuser) => {
+    return jwt.sign({ userId: id, name: name, ispremiumuser}, 'secretKey')
 }
 
 const login = async (req, res) => {
@@ -48,7 +48,7 @@ const login = async (req, res) => {
                         throw new Error(`Something went wrong`);
                     }
                     if(result === true) {
-                        res.status(200).json({success: true, message: 'User logged in sucessful', token: generateAccessToken(user[0].id, user[0].name)})
+                        res.status(200).json({success: true, message: 'User logged in sucessful', token: generateAccessToken(user[0].id, user[0].name, user[0].ispremiumuser)})
                     } else {
                         return res.status(400).json({success: false, message: 'Password is incorrect'})
                     }
@@ -63,5 +63,6 @@ const login = async (req, res) => {
 
 module.exports = {
     signUp,
-    login
+    login,
+    generateAccessToken
 }
