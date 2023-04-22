@@ -119,8 +119,8 @@ function showExpenseOnScreen(expenseDetails) {
     items.appendChild(tbody)
 }
 
-function showPremiumText(rzp) {
-    rzp.textContent = `You are a Premium user`
+function showPremiumText(rzp){
+    rzp.value = 'You are a Premium user'
     rzp.className = 'btn btn-warning';
     rzp.disabled = true;
 }
@@ -138,7 +138,7 @@ function showLeaderBoardOnScreen() {
         var leaderBoardElem = document.getElementById('leaderboard')
         leaderBoardElem.innerHTML += '<h3>Leader Board </h3>'
         userLeaderBoardArray.data.forEach((userDetails) => {
-            leaderBoardElem.innerHTML += `<li>Name - ${userDetails.name} Total Expense - ${userDetails.total_cost}`
+            leaderBoardElem.innerHTML += `<li>Name - ${userDetails.name} Total Expense - ${userDetails.total_cost}</li>`
         })
     }
     document.getElementById('message').appendChild(leaderBoard)
@@ -153,13 +153,14 @@ razorPay.onclick = async function (e) {
         "key": response.data.key_id,
         "order_id": response.data.order.id,
         "handler": async function (response) {
-            await axios.post('http://localhost:3000/purchase/updatetransactionstatus', {
+            const res = await axios.post('http://localhost:3000/purchase/updatetransactionstatus', {
                 order_id: options.order_id,
                 payment_id: response.razorpay_payment_id,
             }, { headers: {"Authorization": token} })
 
             alert(`You are a Premium User Now`)
-            showPremiumText(razorPay);
+            showPremiumText(razorPay)//, tokens);
+            localStorage.setItem('token', res.data.token)
             showLeaderBoardOnScreen()
         },
     };
