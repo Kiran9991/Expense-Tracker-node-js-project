@@ -8,7 +8,7 @@ const addExpense = async(req, res) => {
         const data = await req.user.createExpense({amount, description, category});
         res.status(201).json({newExpenseDetail: data});
     } catch(err) {
-        console.log(`posting data is not`);
+        console.log(`posting data is not working`);
         res.status(500).json(err);
     }
 }

@@ -7,8 +7,9 @@ const razorPay = document.getElementById('rzp-button');
 
 myform.addEventListener('submit', storeExpenses);
 
-function storeExpenses(e) {
-    e.preventDefault();
+async function storeExpenses(e) {
+    try {
+        e.preventDefault();
 
     let amount = document.getElementById('amount').value;
     let description = document.getElementById('description').value;
@@ -22,16 +23,12 @@ function storeExpenses(e) {
 
     // showExpenseOnScreen(expenseDetails);
     const token = localStorage.getItem('token');
-    axios.post('http://localhost:3000/expense/add-expense', expenseDetails, { headers: {"Authorization": token} })
-    .then((response) => {
+    const response = await axios.post('http://localhost:3000/expense/add-expense', expenseDetails, { headers: {"Authorization": token} })
         showExpenseOnScreen(response.data.newExpenseDetail);
-        console.log(response)
-    })
-    .catch((err) => {
-        document.body.innerHTML = document.body.innerHTML+`<h4>Something went Wrong</h4>`;
+    } catch(err) {
         console.log(err);
-    })
-
+        document.body.innerHTML = document.body.innerHTML+`<h4>Something went Wrong</h4>`;
+    }
 }
 
 function parseJwt (token) {
