@@ -135,7 +135,7 @@ function showLeaderBoardOnScreen() {
         var leaderBoardElem = document.getElementById('leaderboard')
         leaderBoardElem.innerHTML += '<h3>Leader Board </h3>'
         userLeaderBoardArray.data.forEach((userDetails) => {
-            leaderBoardElem.innerHTML += `<li>Name - ${userDetails.name} Total Expense - ${userDetails.total_cost}</li>`
+            leaderBoardElem.innerHTML += `<li>Name - ${userDetails.name} Total Expense - ${userDetails.totalExpenses}</li>`
         })
     }
     document.getElementById('message').appendChild(leaderBoard)

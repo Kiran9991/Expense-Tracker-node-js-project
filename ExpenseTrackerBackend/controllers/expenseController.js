@@ -1,12 +1,32 @@
 const Expense = require('../models/expense');
+const User = require('../models/users');
 // const jwt = require('jsonwebtoken');
 
 const addExpense = async(req, res) => {
     try {
         const{amount, description, category} = req.body;
 
-        const data = await req.user.createExpense({amount, description, category});
-        res.status(201).json({newExpenseDetail: data});
+        if(amount == undefined || amount.length === 0) {
+            return res.status(400).json({success: false, message: 'Parameters missing'})
+        }
+
+        // const data = await req.user.createExpense({amount, description, category});
+        // res.status(201).json({newExpenseDetail: data});
+        await Expense.create({ amount, description, category, userId: req.user.id}).then(expense => {
+            const totalExpense = Number(req.user.totalExpenses) + Number(amount)
+            User.update({
+                totalExpenses: totalExpense
+            },{
+                where: {id: req.user.id}
+            }).then(async() => {
+                res.status(200).json({newExpenseDetail: expense})
+            })
+            .catch(async(err) => {
+                return res.status(500).json({success: false, error: err})
+            })
+        }).catch(async(err) => {
+            return res.status(500).json({success: false, error: err})
+        })
     } catch(err) {
         console.log(`posting data is not working`);
         res.status(500).json(err);
