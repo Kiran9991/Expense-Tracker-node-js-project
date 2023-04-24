@@ -27,7 +27,7 @@ async function storeExpenses(e) {
         showExpenseOnScreen(response.data.newExpenseDetail);
     } catch(err) {
         console.log(err);
-        document.body.innerHTML = document.body.innerHTML+`<h4>Something went Wrong</h4>`;
+        document.body.innerHTML = document.body.innerHTML+`<h4 style="text-align: center;">Something went Wrong</h4>`;
     }
 }
 
