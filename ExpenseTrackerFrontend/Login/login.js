@@ -24,3 +24,4 @@ async function loginUser(e) {
         document.body.innerHTML += `<div style = "color:red;">${err.message} </div>`
     }
 }
+

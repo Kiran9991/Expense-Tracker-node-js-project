@@ -4,8 +4,8 @@ const sequelize = require('../util/database');
 // const jwt = require('jsonwebtoken');
 
 const addExpense = async(req, res) => {
+    const t = await sequelize.transaction();
     try {
-        const t = await sequelize.transaction();
         const{amount, description, category} = req.body;
 
         if(amount == undefined || amount.length === 0) {
@@ -41,26 +41,34 @@ const getExpenses = async(req, res) => {
 }
 
 const deleteExpense = async (req, res) => {
+    // const t = await sequelize.transaction();
     try {
-        // const t = await sequelize.transaction();
         if(!req.params.id === 'undefined') {
             console.log("ID is missing")
             return res.status(400).json({err: 'ID is missing'})
         }
         const expenseId = req.params.id;
-        const amount = req.body.amount;
-        const totalExpense = Number(req.user.totalExpenses) - Number(amount)
+        const expense = await Expense.findOne({
+            where: {
+                id:expenseId,
+                userId: req.user.id
+            }
+        })
+        const totalExpenses = await Expense.sum('amount', {
+            where: {userId: req.user.id}
+        })
+        const updatedTotalExpenses = totalExpenses - expense.amount
         const noOfRows = await Expense.destroy({where: {id: expenseId, userId: req.user.id}});
         await User.update({
-            totalExpenses: totalExpense
+            totalExpenses: updatedTotalExpenses
         },{
             where: {id: req.user.id},
             // transaction: t
         })
-        res.sendStatus(200);
         if(noOfRows === 0) {
             return res.status(404).json({message: `Expense doesn't belongs to user`})
         }
+        res.sendStatus(200);
     } catch(err) {
         console.log(err)
         res.status(500).json(err);
