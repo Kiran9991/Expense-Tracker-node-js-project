@@ -1,53 +1,62 @@
-const uuid = require('uuid');
-const sgMail = require('@sendgrid/mail');
 const bcrypt = require('bcrypt');
 
 const User = require('../models/users');
 const Forgotpassword = require('../models/forgotpassword');
 
+const uuid = require('uuid');
+const Sib = require('sib-api-v3-sdk');
+const validator = require('validator');
+
 const forgotpassword = async (req, res) => {
     try {
+
+        const client = Sib.ApiClient.instance;
+        const apiKey = client.authentications['api-key'];
+        apiKey.apiKey = process.env.API_KEY;
+        const transEmailApi = new Sib.TransactionalEmailsApi();
+        
         const { email } =  req.body;
         const user = await User.findOne({where : { email }});
-        if(user){
+        if(user){  
             const id = uuid.v4();
             user.createForgotpassword({ id , active: true })
-                .catch(err => {
-                    throw new Error(err)
-                })
 
-            sgMail.setApiKey(process.env.SENGRID_API_KEY)
+            if (!validator.isEmail(email.toLowerCase())) {
+                    return res.status(400).json({ error: 'Invalid email address' });
+            }
+             
+            const sender = {email:'kiranagiwale3@gmail.com'};
+            const receiver = [{ email }];
 
             const msg = {
-                to: email, 
-                from: 'yj.rocks.2411@gmail.com', // Change to your verified sender
-                subject: 'Sending with SendGrid is Fun',
-                text: 'and easy to do anywhere, even with Node.js',
-                html: `<a href="http://localhost:3000/password/resetpassword/${id}">Reset password</a>`,
+                sender,
+                to: receiver,
+                subject: 'Password reset request for your account',
+                textContent: 'We received a request to reset the password for your account. Please follow the link below to reset your password:',
+                htmlContent: `<p>Hello,</p>
+                <p>We received a request to reset the password for your account. Please follow the link below to reset your password:</p>
+                <p><a href="http://13.50.99.50/password/resetpassword/${id}">Reset Password</a></p><p>If you did not request this password reset, please ignore this email and contact us immediately.</p><p>Thank you,
+                </p><p>Expensify</p>`
             }
-
-            sgMail
-            .send(msg)
+ 
+            const response = await transEmailApi.sendTransacEmail(msg)
             .then((response) => {
 
-                // console.log(response[0].statusCode)
-                // console.log(response[0].headers)
-                return res.status(response[0].statusCode).json({message: 'Link to reset password sent to your mail ', sucess: true})
-
+                return res.status(202).json({message: 'Link to reset password sent to your mail ', success: true});
             })
             .catch((error) => {
+                console.log(error)
                 throw new Error(error);
             })
-
-            //send mail
+            
+            // console.log(response);
         }else {
-            throw new Error('User doesnt exist')
+            throw new Error(`User doesn't exist`)
         }
     } catch(err){
         console.error(err)
-        return res.json({ message: err, sucess: false });
+        return res.json({ message: err, success: false });
     }
-
 }
 
 const resetpassword = (req, res) => {
