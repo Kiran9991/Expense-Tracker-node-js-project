@@ -61,21 +61,24 @@ function showExpenseOnScreen(expenseDetails) {
 
     var tbody = document.createElement('tbody');
     var tr = document.createElement('tr');
+    var th0 = document.createElement('td');
     var th = document.createElement('td')
     var th1 = document.createElement('td')
     var th2 = document.createElement('td')
     var th3 = document.createElement('td')
-    var th4 = document.createElement('td')
+    // var th4 = document.createElement('td')
     tbody.appendChild(tr)
     tr.appendChild(th)
+    tr.appendChild(th0)
     tr.appendChild(th1)
     tr.appendChild(th2)
     tr.appendChild(th3)
-    tr.appendChild(th4)
-    th.textContent = expenseDetails.amount;
+    // tr.appendChild(th4)
+    th0.textContent = expenseDetails.amount
+    th.textContent = expenseDetails.createdAt;
     th1.textContent = expenseDetails.description;
     th2.textContent = expenseDetails.category;
-    th4.innerHTML = ' '
+    
 
     function deleteId(itemId) {
         const token = localStorage.getItem('token');
