@@ -123,6 +123,7 @@ function showPremiumText(rzp){
     rzp.value = 'You are a Premium user'
     rzp.className = 'btn btn-warning';
     rzp.disabled = true;
+    document.getElementById('downloadexpense').disabled = false;
 }
 
 function showLeaderBoardOnScreen() {
