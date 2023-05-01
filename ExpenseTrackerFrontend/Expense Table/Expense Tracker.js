@@ -177,3 +177,29 @@ razorPay.onclick = async function (e) {
         alert('Something went wrong')
     });
 }
+
+function download(){
+    console.log('this is kiran');
+    const token = localStorage.getItem('token');
+    axios.get('http://localhost:3000/user/download', { headers: {"Authorization" : token} })
+    .then((response) => {
+        if(response.status === 200){
+            //the bcakend is essentially sending a download link
+            //  which if we open in browser, the file would download
+            var a = document.createElement("a");
+            a.href = response.data.fileURL;
+            a.download = 'myexpense.csv';
+            a.click();
+        } else {
+            throw new Error(response.data.message)
+        }
+
+    })
+    .catch((err) => {
+        showError(err)
+    });
+}
+
+function showError(err){
+    document.body.innerHTML += `<p style="color:red; text-align: center;">${err}</p>`
+}

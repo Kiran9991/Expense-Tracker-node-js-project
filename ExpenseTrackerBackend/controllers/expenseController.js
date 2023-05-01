@@ -1,7 +1,8 @@
 const Expense = require('../models/expense');
 const User = require('../models/users');
 const sequelize = require('../util/database');
-// const jwt = require('jsonwebtoken');
+const UserServices = require('../services/userservices');
+const S3Services = require('../services/S3services');
 
 const addExpense = async(req, res) => {
     const t = await sequelize.transaction();
@@ -75,9 +76,28 @@ const deleteExpense = async (req, res) => {
     }
 }
 
+const downloadExpense = async(req, res) => {
+    try {
+
+    const expenses = await UserServices.getExpenses(req);
+    // console.log(expenses);
+    const stringifiedExpenses = JSON.stringify(expenses);
+
+    const userId = req.user.id;
+
+    const filename = `Expense${userId}/${new Date()}.txt`;
+    const fileURL = await S3Services.uploadToS3(stringifiedExpenses, filename);
+    res.status(200).json({ fileURL, success: true})
+    } catch(err) {
+        console.log(err);
+        res.status(500).json({fileURL: '', success: false, err: err})
+    }
+}
+
 
 module.exports = {
     addExpense,
     getExpenses,
-    deleteExpense
+    deleteExpense,
+    downloadExpense
 }
