@@ -24,8 +24,11 @@
               <label class="form-label">Choose Category</label>
               <select id="category" class="form-select">
                 <option value="food">Food</option>
-                <option value="petrol">Petrol</option>
+                <option value="fuel">Petrol</option>
                 <option value="salary">Salary</option>
+                <option value="milk">Milk</option>
+                <option value="transport">Transport</option>
+                <option value="fees">Fees</option>
               </select>
             </div>
             <div class="col-4-md-6" id="message">
@@ -43,7 +46,6 @@
           <br>
           <table class="table" id="items">
             <thead>
-              <th>Date</th>
               <th>Expense Amount</th>
               <th>Description</th>
               <th>Category</th>
@@ -61,6 +63,11 @@
             <h3 style="font-weight: bold;" hidden>Leaderboard</h3>
             <ul id="lbItems"></ul>
           </div>
+          <!-- <div style="text-align: center;" id="fileList" hidden>
+            <h3 style="font-weight: bold;">List of Files downloaded</h3>
+            <ul id="fileItem"></ul>
+          </div> -->
+          <div style="text-align: center;" id="pagination"></div>
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.3.5/axios.min.js"></script>
     <script src="Expense Tracker.js"></script>

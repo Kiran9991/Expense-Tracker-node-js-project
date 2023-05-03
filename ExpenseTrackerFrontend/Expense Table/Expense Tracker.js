@@ -1,6 +1,8 @@
 
 const myform = document.getElementById('myform');
 let items = document.getElementById('items');
+const backendApi = 'http://localhost:3000/expense';
+const pagination = document.getElementById('pagination');
 
 const razorPay = document.getElementById('rzp-button');
 
@@ -23,7 +25,7 @@ async function storeExpenses(e) {
 
     // showExpenseOnScreen(expenseDetails);
     const token = localStorage.getItem('token');
-    const response = await axios.post('http://localhost:3000/expense/add-expense', expenseDetails, { headers: {"Authorization": token} })
+    const response = await axios.post(`${backendApi}/add-expense`, expenseDetails, { headers: {"Authorization": token} })
         showExpenseOnScreen(response.data.newExpenseDetail);
     } catch(err) {
         console.log(err);
@@ -42,6 +44,7 @@ function parseJwt (token) {
 }
 
 window.addEventListener('DOMContentLoaded', () => {
+    const page = 1;
     const token = localStorage.getItem('token');
     const decodeToken = parseJwt(token); 
     console.log(decodeToken);
@@ -50,39 +53,44 @@ window.addEventListener('DOMContentLoaded', () => {
         showPremiumText(razorPay);
         showLeaderBoardOnScreen()
     }
-    axios.get('http://localhost:3000/expense/get-expenses', { headers: {"Authorization": token} }).then((response) => {
-        for(let i=0; i<response.data.allExpensesDetails.length; i++) {
-            showExpenseOnScreen(response.data.allExpensesDetails[i]);
-        }
+    axios.get(`${backendApi}/get-expenses?page=${page}`, { headers: {"Authorization": token} }).then((response) => {
+        listExpenses(response.data.allExpensesDetails)
+        showPagination(response.data)
     }).catch((error) => console.log(error));
 })
+
+function listExpenses(userExpenses) {
+    for(let i=0; i<userExpenses.length; i++) {
+        showExpenseOnScreen(userExpenses[i]);
+    }
+}
 
 function showExpenseOnScreen(expenseDetails) {
 
     var tbody = document.createElement('tbody');
     var tr = document.createElement('tr');
     var th0 = document.createElement('td');
-    var th = document.createElement('td')
+    // var th = document.createElement('td')
     var th1 = document.createElement('td')
     var th2 = document.createElement('td')
     var th3 = document.createElement('td')
     // var th4 = document.createElement('td')
     tbody.appendChild(tr)
-    tr.appendChild(th)
+    // tr.appendChild(th)
     tr.appendChild(th0)
     tr.appendChild(th1)
     tr.appendChild(th2)
     tr.appendChild(th3)
     // tr.appendChild(th4)
     th0.textContent = expenseDetails.amount
-    th.textContent = expenseDetails.createdAt;
+    // th.textContent = expenseDetails.createdAt;
     th1.textContent = expenseDetails.description;
     th2.textContent = expenseDetails.category;
     
 
     function deleteId(itemId) {
         const token = localStorage.getItem('token');
-        axios.delete('http://localhost:3000/expense/delete-expense/'+itemId, { headers: {"Authorization": token} })
+        axios.delete(`${backendApi}/delete-expense/${itemId}`, { headers: {"Authorization": token} })
         .then((res) => console.log(res))
         .catch(err => console.log(err))
     }
@@ -97,7 +105,7 @@ function showExpenseOnScreen(expenseDetails) {
 
     function editId(itemId) {
         const token = localStorage.getItem('token');
-        axios.put('http://localhost:3000/expense/delete-expense/'+itemId, { headers: {"Authorization": token} })
+        axios.put(`${backendApi}/delete-expense/${itemId}`, { headers: {"Authorization": token} })
         .then((res) => console.log(res))
     }
     
@@ -107,16 +115,53 @@ function showExpenseOnScreen(expenseDetails) {
     editbtn.onclick = () => {
       items.removeChild(tbody)
       editId(expenseDetails.id)
+      deleteId(expenseDetails.id)
       document.getElementById('amount').value = expenseDetails.amount
       document.getElementById('description').value = expenseDetails.description
       document.getElementById('category').value = expenseDetails.category
     }
 
-    // th3.appendChild(editbtn)
+    th3.appendChild(editbtn)
 
     th3.appendChild(deletebtn)
     
     items.appendChild(tbody)
+}
+
+function showPagination({
+    currentPage,
+    hasNextPage,
+    nextPage,
+    hasPreviousPage,
+    previousPage,
+    lastPage
+}) {
+    pagination.innerHTML = '';
+
+    if(hasPreviousPage) {
+        const btn2 = document.createElement('button');
+        btn2.innerHTML = previousPage
+        btn2.addEventListener('click', () => getProducts(previousPage))
+        pagination.appendChild(btn2)
+    }
+    const btn1 = document.createElement('button')
+    btn1.innerHTML = `<h3>${currentPage}</h3>`
+    btn1.addEventListener('click', () => getProducts(currentPage))
+    pagination.appendChild(btn1)
+    if(hasNextPage) {
+        const btn3 = document.createElement('button')
+        btn3.innerHTML = nextPage
+        btn3.addEventListener('click', () => getProducts(nextPage))
+        pagination.appendChild(btn3)
+    };
+}
+
+function getProducts(page) {
+    const token = localStorage.getItem('token');
+    axios.get(`${backendApi}/get-expenses?page=${page}`, { headers: {"Authorization": token} }).then((response) => {
+        listExpenses(response.data.allExpensesDetails)
+        showPagination(response.data)
+    }).catch((error) => console.log(error));
 }
 
 function showPremiumText(rzp){
@@ -124,6 +169,7 @@ function showPremiumText(rzp){
     rzp.className = 'btn btn-warning';
     rzp.disabled = true;
     document.getElementById('downloadexpense').disabled = false;
+    // document.getElementById('showFilesDownloaded').disabled = false;
 }
 
 function showLeaderBoardOnScreen() {
@@ -203,3 +249,17 @@ function download(){
 function showError(err){
     document.body.innerHTML += `<p style="color:red; text-align: center;">${err}</p>`
 }
+
+// function showFilesDownloaded() {
+//     const token = localStorage.getItem('token');
+//     const filesArray = axios.get('http://localhost:3000/user/filesList',{ headers: {"Authorization": token} })
+//         console.log(filesArray);
+//         showListOfFiles(filesArray.data.fileList);
+// }
+
+// function showListOfFiles(file) {
+//     document.getElementById('fileList').hidden = false;
+//     const li = document.createElement('li');
+//     li.textContent = `File Name - ${file.fileName} - File Urls - ${file.fileURL}`
+//     document.getElementById('fileItem').append(li);
+// }

@@ -1,8 +1,10 @@
 const Expense = require('../models/expense');
 const User = require('../models/users');
+const FileDownload = require('../models/filesdownloaded');
 const sequelize = require('../util/database');
 const UserServices = require('../services/userservices');
 const S3Services = require('../services/S3services');
+const ITEMS_PER_PAGE = 4;
 
 const addExpense = async(req, res) => {
     const t = await sequelize.transaction();
@@ -32,9 +34,24 @@ const addExpense = async(req, res) => {
 }
 
 const getExpenses = async(req, res) => {
-    try {                     
-        const expenses = await req.user.getExpenses();
-        res.status(200).json({allExpensesDetails: expenses})
+    try {
+        const page = +req.query.page || 1;
+        let totalItems;
+        const total = await Expense.count()  
+        totalItems = total;           
+        const expenses = await Expense.findAll({
+            offset: (page-1) * ITEMS_PER_PAGE,
+            limit: ITEMS_PER_PAGE,
+        })
+        res.status(200).json({
+            allExpensesDetails: expenses,
+            currentPage: page,
+            hasNextPage: ITEMS_PER_PAGE * page < totalItems,
+            nextPage: page + 1,
+            hasPreviousPage: page > 1,
+            previousPage: page - 1,
+            lastPage: Math.ceil(totalItems / ITEMS_PER_PAGE),
+        });
     } catch(error) {
         console.log('Get expenses is failing', JSON.stringify(error))
         res.status(500).json({error: error})
@@ -87,17 +104,39 @@ const downloadExpense = async(req, res) => {
 
     const filename = `Expense${userId}/${new Date()}.txt`;
     const fileURL = await S3Services.uploadToS3(stringifiedExpenses, filename);
-    res.status(200).json({ fileURL, success: true})
+    res.status(200).json({ fileURL, filename, success: true})
     } catch(err) {
         console.log(err);
         res.status(500).json({fileURL: '', success: false, err: err})
     }
 }
 
+const filesDownloaded = async(req, res) => {
+    try {
+        const{fileURL, filename} = req.body;
+        const filedownload = await FileDownload.create({fileURL, filename, userId: req.user.id})
+        res.status(201).json({filedownload, success: true})
+    } catch(err) {
+        console.log(err);
+        res.status(501).json({success: false, err:err})
+    }
+}
+
+const listOfFilesDownloaded = async(req, res) => {
+    try{
+        const fileList = await FileDownload.findAll()
+        res.status(204).json({fileList, success: true});
+    } catch(err) {
+        console.log(err);
+        res.status(503).json({success: false, err: err})
+    }
+}
 
 module.exports = {
     addExpense,
     getExpenses,
     deleteExpense,
-    downloadExpense
+    downloadExpense,
+    // filesDownloaded,
+    // listOfFilesDownloaded
 }

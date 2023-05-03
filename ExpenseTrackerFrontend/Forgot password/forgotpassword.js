@@ -1,5 +1,5 @@
 function forgotpassword(e) {
-    e.preventDefault();
+    e.preventDefault(e);
     const email = document.getElementById('emailId').value;
     
     const userDetails = {
