@@ -4,7 +4,7 @@ const FileDownload = require('../models/filesdownloaded');
 const sequelize = require('../util/database');
 const UserServices = require('../services/userservices');
 const S3Services = require('../services/S3services');
-const ITEMS_PER_PAGE = 4;
+
 
 const addExpense = async(req, res) => {
     const t = await sequelize.transaction();
@@ -33,8 +33,13 @@ const addExpense = async(req, res) => {
     }
 }
 
+const ITEMS_PER_PAGE = 4;
+
 const getExpenses = async(req, res) => {
     try {
+        const pageno = req.query.pageNos;
+        console.log(pageno);
+        // ITEMS_PER_PAGE = pageno
         const page = +req.query.page || 1;
         let totalItems;
         const total = await Expense.count()  
@@ -59,7 +64,6 @@ const getExpenses = async(req, res) => {
 }
 
 const deleteExpense = async (req, res) => {
-    // const t = await sequelize.transaction();
     try {
         if(!req.params.id === 'undefined') {
             console.log("ID is missing")
@@ -81,7 +85,6 @@ const deleteExpense = async (req, res) => {
             totalExpenses: updatedTotalExpenses
         },{
             where: {id: req.user.id},
-            // transaction: t
         })
         if(noOfRows === 0) {
             return res.status(404).json({message: `Expense doesn't belongs to user`})

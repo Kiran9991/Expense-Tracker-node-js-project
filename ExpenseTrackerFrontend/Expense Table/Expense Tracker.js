@@ -43,6 +43,18 @@ function parseJwt (token) {
     return JSON.parse(jsonPayload);
 }
 
+const numRows = document.getElementById('numrows')
+
+numRows.onchange = () => {
+    const token = localStorage.getItem('token');
+    localStorage.setItem('pageNos', numRows.value)
+    let pageNo = localStorage.getItem('pageNos')
+    axios.get(`${backendApi}/get-expenses?page=${pageNo}&pageNos=${pageNo}`, { headers: {"Authorization": token} }).then((response) => {
+        listExpenses(response.data.allExpensesDetails)
+        showPagination(response.data)
+    }).catch((error) => console.log(error));
+}
+
 window.addEventListener('DOMContentLoaded', () => {
     const page = 1;
     const token = localStorage.getItem('token');
