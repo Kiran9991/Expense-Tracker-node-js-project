@@ -2,7 +2,6 @@
 const myform = document.getElementById('myform');
 let items = document.getElementById('items');
 const backendApi = 'http://localhost:3000/expense';
-const pagination = document.getElementById('pagination');
 
 const razorPay = document.getElementById('rzp-button');
 
@@ -43,20 +42,8 @@ function parseJwt (token) {
     return JSON.parse(jsonPayload);
 }
 
-const numRows = document.getElementById('numrows')
-
-numRows.onchange = () => {
-    const token = localStorage.getItem('token');
-    localStorage.setItem('pageNos', numRows.value)
-    let pageNo = localStorage.getItem('pageNos')
-    axios.get(`${backendApi}/get-expenses?page=${pageNo}&pageNos=${pageNo}`, { headers: {"Authorization": token} }).then((response) => {
-        listExpenses(response.data.allExpensesDetails)
-        showPagination(response.data)
-    }).catch((error) => console.log(error));
-}
-
-window.addEventListener('DOMContentLoaded', () => {
-    const page = 1;
+window.addEventListener('DOMContentLoaded', async () => {
+    // let page = 1, limit = 5;
     const token = localStorage.getItem('token');
     const decodeToken = parseJwt(token); 
     console.log(decodeToken);
@@ -65,16 +52,76 @@ window.addEventListener('DOMContentLoaded', () => {
         showPremiumText(razorPay);
         showLeaderBoardOnScreen()
     }
-    axios.get(`${backendApi}/get-expenses?page=${page}`, { headers: {"Authorization": token} }).then((response) => {
-        listExpenses(response.data.allExpensesDetails)
-        showPagination(response.data)
-    }).catch((error) => console.log(error));
+    getAllExpenses();
+    setPaginationLimit();
 })
 
-function listExpenses(userExpenses) {
-    for(let i=0; i<userExpenses.length; i++) {
-        showExpenseOnScreen(userExpenses[i]);
+async function getAllExpenses(page = 1, limit = 5) {
+    const token = localStorage.getItem('token');
+    if(localStorage.getItem('limit')){
+        limit = localStorage.getItem('limit');
     }
+    const res = await axios.get(`${backendApi}/get-expenses?page=${page}&limit=${limit}`, {headers: {'Authorization': token}})
+        const expenses = res.data.allExpensesDetails;
+        expenses.forEach((expense) => {
+            showExpenseOnScreen(expense)
+        })
+        balance = res.data.balance;
+        if(expenses.length <= 0){
+            const paginationRowDiv = document.getElementById('paginationRowDiv');
+            paginationRowDiv.innerText = '';
+            return;
+        }
+        const currentPage = res.data.currentPage;
+        const prevPage = res.data.prevPage;
+        const nextPage = res.data.nextPage;
+        paginationInDOM(currentPage, prevPage, nextPage, limit);
+}
+
+function paginationInDOM(currentPage, prevPage, nextPage, limit = 5){
+    currentPage = parseInt(currentPage);
+    prevPage = parseInt(prevPage);
+    nextPage = parseInt(nextPage);
+    
+    paginationButtons.innerText = '';
+    
+    const currentPageBtn = document.createElement('button');
+    currentPageBtn.innerText = currentPage;
+    currentPageBtn.className = 'btn btn-secondary';
+    currentPageBtn.addEventListener('click', () => getAllExpenses(currentPage, limit));
+
+    const prevPageBtn = document.createElement('button');
+    prevPageBtn.innerText = '<< Prev';
+    prevPageBtn.className = 'btn btn-outline-secondary';
+    prevPageBtn.addEventListener('click', () => getAllExpenses(prevPage, limit));
+
+    const nextPageBtn = document.createElement('button');
+    nextPageBtn.innerText = 'Next >>';
+    nextPageBtn.className = 'btn btn-outline-secondary';
+    nextPageBtn.addEventListener('click', () => getAllExpenses(nextPage, limit));
+
+    if(prevPage){
+        prevPageBtn.classList.remove('disabled');
+    }else{
+        prevPageBtn.classList.add('disabled');
+    }
+    if(nextPage){
+        nextPageBtn.classList.remove('disabled');
+    }else{
+        nextPageBtn.classList.add('disabled');
+    }
+
+    paginationButtons.appendChild(prevPageBtn);
+    paginationButtons.appendChild(currentPageBtn);
+    paginationButtons.appendChild(nextPageBtn);
+}
+
+function setPaginationLimit(){
+    const paginationLimit = document.getElementById('paginationLimit');
+    paginationLimit.addEventListener('change', () => {
+        localStorage.setItem('limit', paginationLimit.value);
+        window.location.reload();
+    });
 }
 
 function showExpenseOnScreen(expenseDetails) {
@@ -140,48 +187,11 @@ function showExpenseOnScreen(expenseDetails) {
     items.appendChild(tbody)
 }
 
-function showPagination({
-    currentPage,
-    hasNextPage,
-    nextPage,
-    hasPreviousPage,
-    previousPage,
-    lastPage
-}) {
-    pagination.innerHTML = '';
-
-    if(hasPreviousPage) {
-        const btn2 = document.createElement('button');
-        btn2.innerHTML = previousPage
-        btn2.addEventListener('click', () => getProducts(previousPage))
-        pagination.appendChild(btn2)
-    }
-    const btn1 = document.createElement('button')
-    btn1.innerHTML = `<h3>${currentPage}</h3>`
-    btn1.addEventListener('click', () => getProducts(currentPage))
-    pagination.appendChild(btn1)
-    if(hasNextPage) {
-        const btn3 = document.createElement('button')
-        btn3.innerHTML = nextPage
-        btn3.addEventListener('click', () => getProducts(nextPage))
-        pagination.appendChild(btn3)
-    };
-}
-
-function getProducts(page) {
-    const token = localStorage.getItem('token');
-    axios.get(`${backendApi}/get-expenses?page=${page}`, { headers: {"Authorization": token} }).then((response) => {
-        listExpenses(response.data.allExpensesDetails)
-        showPagination(response.data)
-    }).catch((error) => console.log(error));
-}
-
 function showPremiumText(rzp){
     rzp.value = 'You are a Premium user'
     rzp.className = 'btn btn-warning';
     rzp.disabled = true;
     document.getElementById('downloadexpense').disabled = false;
-    // document.getElementById('showFilesDownloaded').disabled = false;
 }
 
 function showLeaderBoardOnScreen() {
@@ -236,42 +246,57 @@ razorPay.onclick = async function (e) {
     });
 }
 
-function download(){
-    console.log('this is kiran');
+async function download(){
+    try{
     const token = localStorage.getItem('token');
-    axios.get('http://localhost:3000/user/download', { headers: {"Authorization" : token} })
-    .then((response) => {
-        if(response.status === 200){
-            //the bcakend is essentially sending a download link
-            //  which if we open in browser, the file would download
-            var a = document.createElement("a");
-            a.href = response.data.fileURL;
-            a.download = 'myexpense.csv';
-            a.click();
-        } else {
-            throw new Error(response.data.message)
-        }
+    const response = await axios.get('http://localhost:3000/user/download', { headers: {"Authorization" : token} })
+    if(response.status === 200){
+        document.getElementById('fileDownloadedbutton').hidden = false;
+        var a = document.createElement("a");
+        a.href = response.data.fileURL;
+        a.download = 'myexpense.csv';
+        a.click();
+    } else {
+        throw new Error(response.data.message)
+    }
+    }catch(err) {
+        console.log(err);
+    }
+}
 
-    })
-    .catch((err) => {
-        showError(err)
-    });
+async function showDownloadedFiles() {
+    try{
+    const downloadedFiles = document.getElementById('downloadedFiles');
+    downloadedFiles.hidden = false;
+    const token = localStorage.getItem('token');
+    const response = await axios.get('http://localhost:3000/user/downloadedFiles', { headers: {"Authorization" : token} })
+    const data = response.data;
+    console.log('all downloads',data);
+    if(data.length >0){ 
+    const urls = document.getElementById('fileList');
+    urls.textContent = 'Downloaded Files';
+    urls.style.fontWeight= "500";
+      
+    for(let i=0; i<data.length; i++){
+        const link = document.createElement('a');
+        link.href = data[i];
+        link.textContent = data[i].slice(0, 50 - 3) + "...";
+        const urlList = document.createElement('li');
+        urlList.appendChild(link);
+        urls.appendChild(urlList);
+        }
+    }else{
+      alert(`You haven't downloaded any file yet`);
+    }
+    }catch(err) {
+        console.log(err);
+    }
 }
 
 function showError(err){
     document.body.innerHTML += `<p style="color:red; text-align: center;">${err}</p>`
 }
 
-// function showFilesDownloaded() {
-//     const token = localStorage.getItem('token');
-//     const filesArray = axios.get('http://localhost:3000/user/filesList',{ headers: {"Authorization": token} })
-//         console.log(filesArray);
-//         showListOfFiles(filesArray.data.fileList);
-// }
-
-// function showListOfFiles(file) {
-//     document.getElementById('fileList').hidden = false;
-//     const li = document.createElement('li');
-//     li.textContent = `File Name - ${file.fileName} - File Urls - ${file.fileURL}`
-//     document.getElementById('fileItem').append(li);
-// }
+function logOut() {
+    window.location.href = '../Login/login.html';
+}

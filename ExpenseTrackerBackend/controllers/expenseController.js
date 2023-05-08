@@ -1,6 +1,6 @@
 const Expense = require('../models/expense');
 const User = require('../models/users');
-const FileDownload = require('../models/filesdownloaded');
+const FileDownloaded = require('../models/filesdownloaded');
 const sequelize = require('../util/database');
 const UserServices = require('../services/userservices');
 const S3Services = require('../services/S3services');
@@ -33,37 +33,37 @@ const addExpense = async(req, res) => {
     }
 }
 
-const ITEMS_PER_PAGE = 4;
-
 const getExpenses = async(req, res) => {
+    const t = await sequelize.transaction();
     try {
-        const pageno = req.query.pageNos;
-        console.log(pageno);
-        // ITEMS_PER_PAGE = pageno
-        const page = +req.query.page || 1;
-        let totalItems;
-        const total = await Expense.count()  
-        totalItems = total;           
-        const expenses = await Expense.findAll({
-            offset: (page-1) * ITEMS_PER_PAGE,
-            limit: ITEMS_PER_PAGE,
-        })
+        const page = parseInt(req.query.page)
+        const limit = parseInt(req.query.limit)
+        const expenses = await Expense.findAll({ where: {userId: req.user.id} },{transaction:t})
+        const user = await User.findOne({ where: {id: req.user.id} },{transaction:t});
+
+        const startIndex = (page - 1) * limit;
+        const endIndex = page * limit;
+        const nextPage = endIndex < expenses.length ? page + 1 : null;
+        const prevPage = startIndex > 0 ? page - 1 : null;
+        await t.commit();
         res.status(200).json({
             allExpensesDetails: expenses,
             currentPage: page,
-            hasNextPage: ITEMS_PER_PAGE * page < totalItems,
-            nextPage: page + 1,
-            hasPreviousPage: page > 1,
-            previousPage: page - 1,
-            lastPage: Math.ceil(totalItems / ITEMS_PER_PAGE),
+            nextPage: nextPage,
+            prevPage: prevPage,
+            limit,
+            allExpensesDetails: expenses.slice(startIndex, endIndex),
+            balance: user.balance
         });
     } catch(error) {
+        await t.rollback();
         console.log('Get expenses is failing', JSON.stringify(error))
         res.status(500).json({error: error})
     }
 }
 
 const deleteExpense = async (req, res) => {
+    const t = await sequelize.transaction();
     try {
         if(!req.params.id === 'undefined') {
             console.log("ID is missing")
@@ -75,7 +75,7 @@ const deleteExpense = async (req, res) => {
                 id:expenseId,
                 userId: req.user.id
             }
-        })
+        },{transaction:t})
         const totalExpenses = await Expense.sum('amount', {
             where: {userId: req.user.id}
         })
@@ -89,8 +89,10 @@ const deleteExpense = async (req, res) => {
         if(noOfRows === 0) {
             return res.status(404).json({message: `Expense doesn't belongs to user`})
         }
+        await t.commit();
         res.sendStatus(200);
     } catch(err) {
+        await t.rollback();
         console.log(err)
         res.status(500).json(err);
     }
@@ -100,9 +102,7 @@ const downloadExpense = async(req, res) => {
     try {
 
     const expenses = await UserServices.getExpenses(req);
-    // console.log(expenses);
     const stringifiedExpenses = JSON.stringify(expenses);
-
     const userId = req.user.id;
 
     const filename = `Expense${userId}/${new Date()}.txt`;
@@ -114,24 +114,17 @@ const downloadExpense = async(req, res) => {
     }
 }
 
-const filesDownloaded = async(req, res) => {
-    try {
-        const{fileURL, filename} = req.body;
-        const filedownload = await FileDownload.create({fileURL, filename, userId: req.user.id})
-        res.status(201).json({filedownload, success: true})
-    } catch(err) {
-        console.log(err);
-        res.status(501).json({success: false, err:err})
-    }
-}
-
-const listOfFilesDownloaded = async(req, res) => {
+const listOfFilesDownloaded = async (req, res) => {
     try{
-        const fileList = await FileDownload.findAll()
-        res.status(204).json({fileList, success: true});
-    } catch(err) {
+        if(req.user.ispremiumuser) {
+            const filesDownloaded = await FileDownloaded.findAll({where: {userId: req.user.id}});
+            const urls = filesDownloaded.map(download => download.url);
+            console.log("all downloads====>>>",urls);
+
+            res.status(200).json(urls);
+        }
+    }catch (err) {
         console.log(err);
-        res.status(503).json({success: false, err: err})
     }
 }
 
@@ -140,6 +133,5 @@ module.exports = {
     getExpenses,
     deleteExpense,
     downloadExpense,
-    // filesDownloaded,
-    // listOfFilesDownloaded
+    listOfFilesDownloaded,
 }

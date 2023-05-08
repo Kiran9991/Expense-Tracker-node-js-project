@@ -32,7 +32,7 @@ const forgotpassword = async (req, res) => {
                 sender,
                 to: receiver,
                 subject: 'Password reset request for your account',
-                textContent: 'We received a request to reset the password for your account. Please follow the link below to reset your password:',
+                textContent: 'We received a request to reset the password for your account. Please click on the link to reset the password',
                 htmlContent: `<p>Hello,</p>
                 <p>We received a request to reset the password for your account. Please follow the link below to reset your password:</p>
                 <p><a href="http://localhost:3000/password/resetpassword/${id}">Reset Password</a></p><p>If you did not request this password reset, please ignore this email and contact us immediately.</p><p>Thank you,
@@ -41,15 +41,12 @@ const forgotpassword = async (req, res) => {
  
             const response = await transEmailApi.sendTransacEmail(msg)
             .then((response) => {
-
                 return res.status(202).json({message: 'Link to reset password sent to your mail ', success: true});
             })
             .catch((error) => {
                 console.log(error)
                 throw new Error(error);
             })
-            
-            // console.log(response);
         }else {
             throw new Error(`User doesn't exist`)
         }
@@ -80,7 +77,6 @@ const resetpassword = (req, res) => {
                                 </html>`
                                 )
             res.end()
-
         }
     })
 }
@@ -92,10 +88,8 @@ const updatepassword = (req, res) => {
         const { resetpasswordid } = req.params;
         Forgotpassword.findOne({ where : { id: resetpasswordid }}).then(resetpasswordrequest => {
             User.findOne({where: { id : resetpasswordrequest.userId}}).then(user => {
-                // console.log('userDetails', user)
                 if(user) {
                     //encrypt the password
-
                     const saltRounds = 10;
                     bcrypt.genSalt(saltRounds, function(err, salt) {
                         if(err){
@@ -121,9 +115,7 @@ const updatepassword = (req, res) => {
     } catch(error){
         return res.status(403).json({ error, success: false } )
     }
-
 }
-
 
 module.exports = {
     forgotpassword,

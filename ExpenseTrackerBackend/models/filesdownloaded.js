@@ -9,7 +9,6 @@ const DownloadedFiles = sequelize.define('downloadedFiles', {
       allowNull: false,
       primaryKey: true
     },
-    fileName: Sequelize.STRING,
     urls: Sequelize.STRING,
   });
   

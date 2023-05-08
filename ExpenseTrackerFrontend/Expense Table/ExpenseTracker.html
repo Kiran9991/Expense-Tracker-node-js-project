@@ -12,14 +12,23 @@
     <div class="container-sm">
         <header class="header"><h1 style="-webkit-text-fill-color: green;">Expense Tracker</h1></header>
         <div class="col 5 md-3" style="text-align: end;">
-          <label for="numrows">Rows per page:</label>
-          <select name="rows" id="numrows">
-            <option value="4">4</option>
-            <option value="10">10</option>
-            <option value="20">20</option>
-            <option value="30">30</option>
-            <option value="40">40</option>
-          </select>
+          <div class="row mb-1" id="paginationRowDiv" style="text-align: end;">
+            <div class="col-8" style="text-align: end;">
+              
+            </div>
+            <div class="col-4" style="text-align: end; width: 33%;">
+              <select class="form-select form-select-sm" id="paginationLimit">
+                <option selected>Rows per Page</option>
+                <option value="5">5</option>
+                <option value="10">10</option>
+                <option value="15">15</option>
+                <option value="20">20</option>
+              </select>
+            </div>
+        </div>
+           <div class="btn-group btn-group-sm" role="group" id="paginationButtons">
+        </div>
+          <button type="submit" class="btn btn-primary btn-md" onclick="logOut()">Log out</button>
         </div>
         <form class="row g-3" id="myform">
             <div class="col 5 md-3">
@@ -34,7 +43,7 @@
               <label class="form-label">Choose Category</label>
               <select id="category" class="form-select">
                 <option value="food">Food</option>
-                <option value="fuel">Petrol</option>
+                <option value="fuel">Fuel</option>
                 <option value="salary">Salary</option>
                 <option value="milk">Milk</option>
                 <option value="transport">Transport</option>
@@ -42,7 +51,7 @@
               </select>
             </div>
             <div class="col-4-md-6" id="message">
-              <button type="submit" class="btn btn-primary">Add Expense</button> <input type="button" id="rzp-button" class="btn btn-success" value="Buy Premium"> <input onclick="download()" type="button" id="downloadexpense" class="btn btn-dark" value="Download File" disabled>
+              <button type="submit" class="btn btn-primary">Add Expense</button> <input type="button" id="rzp-button" class="btn btn-success" value="Buy Premium"> <input onclick="download()" type="button" id="downloadexpense" class="btn btn-dark" value="Download File" disabled> <input type="button" onclick="showDownloadedFiles" id="fileDownloadedbutton" class="btn btn-dark" value="Show Downloaded Files" hidden>
               <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
             </div>
             <!-- <div class="col-4-md-6">
@@ -73,10 +82,10 @@
             <h3 style="font-weight: bold;" hidden>Leaderboard</h3>
             <ul id="lbItems"></ul>
           </div>
-          <!-- <div style="text-align: center;" id="fileList" hidden>
-            <h3 style="font-weight: bold;">List of Files downloaded</h3>
-            <ul id="fileItem"></ul>
-          </div> -->
+          <div style="text-align: center;" id="downloadedFiles">
+            <h3 style="font-weight: bold;" hidden>List of Files downloaded</h3>
+            <ul id="fileList"></ul>
+          </div>
           <div style="text-align: center;" id="pagination"></div>
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.3.5/axios.min.js"></script>
