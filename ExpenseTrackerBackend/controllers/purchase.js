@@ -29,19 +29,16 @@ const purchasepremium = async (req, res) => {
 }
 
  const updateTransactionStatus = async (req, res ) => {
-    const t = await sequelize.transaction();
     try {
         const userId = req.user.id;
         const { payment_id, order_id} = req.body;
-        const order  = await Order.findOne({where : {orderid : order_id}}, { transaction: t })
-        const promise1 =  order.update({ paymentid: payment_id, status: 'SUCCESSFULL'}, { transaction: t }) 
-        const promise2 =  req.user.update({ ispremiumuser: true }, { transaction: t }) 
+        const order  = await Order.findOne({where : {orderid : order_id}})
+        const promise1 =  order.update({ paymentid: payment_id, status: 'SUCCESSFULL'})
+        const promise2 =  req.user.update({ ispremiumuser: true })
        
         Promise.all([promise1, promise2])
-        await t.commit();
         return res.status(202).json({sucess: true, message: "Transaction Successful",token: userController.generateAccessToken(userId,undefined , true) })       
     } catch (err) {
-        await t.rollback();
         console.log(err);
         res.status(403).json({ errpr: err, message: 'Something went wrong' })
     }

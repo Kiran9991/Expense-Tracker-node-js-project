@@ -7,6 +7,8 @@ const uuid = require('uuid');
 const Sib = require('sib-api-v3-sdk');
 const validator = require('validator');
 
+require('dotenv').config();
+
 const forgotpassword = async (req, res) => {
     try {
 

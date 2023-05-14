@@ -192,6 +192,7 @@ function showPremiumText(rzp){
     rzp.className = 'btn btn-warning';
     rzp.disabled = true;
     document.getElementById('downloadexpense').disabled = false;
+    document.getElementById('fileDownloadedbutton').hidden = false;
 }
 
 function showLeaderBoardOnScreen() {
@@ -251,7 +252,7 @@ async function download(){
     const token = localStorage.getItem('token');
     const response = await axios.get('http://localhost:3000/user/download', { headers: {"Authorization" : token} })
     if(response.status === 200){
-        document.getElementById('fileDownloadedbutton').hidden = false;
+        // document.getElementById('fileDownloadedbutton').hidden = false;
         var a = document.createElement("a");
         a.href = response.data.fileURL;
         a.download = 'myexpense.csv';
@@ -267,19 +268,20 @@ async function download(){
 async function showDownloadedFiles() {
     try{
     const downloadedFiles = document.getElementById('downloadedFiles');
-    downloadedFiles.hidden = false;
+    
     const token = localStorage.getItem('token');
     const response = await axios.get('http://localhost:3000/user/downloadedFiles', { headers: {"Authorization" : token} })
     const data = response.data;
     console.log('all downloads',data);
     if(data.length >0){ 
+    downloadedFiles.hidden = false;
     const urls = document.getElementById('fileList');
     urls.textContent = 'Downloaded Files';
     urls.style.fontWeight= "500";
       
     for(let i=0; i<data.length; i++){
         const link = document.createElement('a');
-        link.href = data[i];
+        link.href = data[i]
         link.textContent = data[i].slice(0, 50 - 3) + "...";
         const urlList = document.createElement('li');
         urlList.appendChild(link);

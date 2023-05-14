@@ -1,4 +1,5 @@
 const AWS = require('aws-sdk');
+require('dotenv').config()
 
 const uploadToS3 = (data, filename) => {
     const BUCKET_NAME = process.env.BUCKET_NAME;

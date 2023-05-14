@@ -107,6 +107,7 @@ const downloadExpense = async(req, res) => {
 
     const filename = `Expense${userId}/${new Date()}.txt`;
     const fileURL = await S3Services.uploadToS3(stringifiedExpenses, filename);
+    await FileDownloaded.create({userId: req.user.id, urls: fileURL})
     res.status(200).json({ fileURL, filename, success: true})
     } catch(err) {
         console.log(err);
@@ -117,8 +118,8 @@ const downloadExpense = async(req, res) => {
 const listOfFilesDownloaded = async (req, res) => {
     try{
         if(req.user.ispremiumuser) {
-            const filesDownloaded = await FileDownloaded.findAll({where: {userId: req.user.id}});
-            const urls = filesDownloaded.map(download => download.url);
+            const filesDownloaded = await FileDownloaded.findAll()//{where: {userId: req.user.id}});
+            const urls = filesDownloaded.map(download => download.urls);
             console.log("all downloads====>>>",urls);
 
             res.status(200).json(urls);
